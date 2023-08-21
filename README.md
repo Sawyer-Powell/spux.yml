@@ -8,7 +8,7 @@ dead simple.
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
 - [Installation](#installation)
-- [The spux.yml file](#the-spux.yml-file)
+- [The spux.yml file](#the-spuxyml-file)
 - [Making use of SPUX_CMD environment variables](#making-use-of-spux_cmd-environment-variables)
 
 ## The Problem
