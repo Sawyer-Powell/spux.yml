@@ -8,6 +8,7 @@ dead simple.
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
 - [Installation](#installation)
+- [The spux cli](#the-spux-cli)
 - [The spux.yml file](#the-spuxyml-file)
 - [Making use of SPUX_CMD environment variables](#making-use-of-spux_cmd-environment-variables)
 
@@ -102,7 +103,7 @@ sudo cp ./spux /usr/bin # or somewhere else on your path, I keep my spux binary 
 
 `spux`
 - Looks for a `spux.yml` file in the current directory. If it finds one,
-it creates the **space**
+it creates the space
 
 `spux [path/to/space.yml]`
 - Tries to create a space off of the yml provided at that path
@@ -118,7 +119,7 @@ interpreted.
 - Kills whatever space `spux` has matched to
 
 `--list`: `-l`
-- Lists all the spaces have scripts in `~/.config/spux/bin`
+- Lists all the spaces that have scripts in `~/.config/spux/bin`
 
 `--recreate`: `-r`
 - Kills whatever space `spux` has matched to and restarts it (useful when testing your `yml` file)
