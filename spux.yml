@@ -3,8 +3,14 @@ space: "spux"
 root: "/home/sawyer/dev/personal/spux"
 windows:
   - name: "shell"
+    panes:
+        - name: "git"
+          init: "lazygit {enter}"
+        - name: "zsh"
+    layout: "even-horizontal"
   - name: "vi"
     init: "nvim . {enter}"
     cmds:
       - cmd: "{clear} go build spux.go {enter}"
-        tgt: "shell"
+        tgt: "zsh"
+
