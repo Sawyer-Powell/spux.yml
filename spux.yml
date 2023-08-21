@@ -1,0 +1,10 @@
+---
+space: "spux"
+root: "/home/sawyer/dev/personal/spux"
+windows:
+  - name: "shell"
+  - name: "vi"
+    init: "nvim . {enter}"
+    cmds:
+      - cmd: "{clear} go build spux.go {enter}"
+        tgt: "shell"
