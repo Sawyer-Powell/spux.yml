@@ -276,7 +276,7 @@ func spaceAlreadyRunning(spaceName string) bool {
 	outBytes, err := tmuxLs.Output()
 
 	if err != nil {
-		fmt.Printf("error running \"tmux ls\" err=%v\n", err)
+		//fmt.Printf("error running \"tmux ls\" err=%v\n", err)
 		return false
 	}
 
