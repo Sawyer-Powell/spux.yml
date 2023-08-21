@@ -3,6 +3,14 @@
 A cli tool to make creating and managing tmux development environments 
 dead simple.
 
+### Table of Contents
+
+- [The Problem](#the-problem)
+- [The Solution](#the-solution)
+- [Installation](#installation)
+- [The spux.yml file](#the-spux.yml-file)
+- [Making use of SPUX_CMD environment variables](#making-use-of-spux_cmd-environment-variables)
+
 ## The Problem
 
 Doing development in vim and tmux is awesome, but having to recreate your
