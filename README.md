@@ -61,31 +61,60 @@ tmux new-window -t spux:1 -n vi
 tmux send-keys -t spux:1 'nvim .' C-m
 ```
 
+## Installation
+
+### Requirements
+
+Spux is only compatible with linux/unix machines which have tmux installed
+
+Spux is not available for windows machines.
+
+### Building and installing
+
+Copy and use the `spux` binary provided in the root of this package at
+your own risk.
+
+I recommend building it yourself:
+
+1. Make sure you have golang installed, if not install [here](https://go.dev/doc/install)
+2. Run the script below
+
+```bash
+git clone https://github.com/Sawyer-Powell/spux.yml
+cd spux.yml
+go get -u ./... # grabs all the dependencies for this project
+go build spux.go
+sudo cp ./spux /usr/bin # or somewhere else on your path, I keep my spux binary in ~/.local/bin
+```
+
 ## The spux.yml file 
 
 Here is a full specification of the spux.yml file:
 
 ```yaml
-space: "the name of the tmux session" #required
-root: "the root directory of this session" #required
+space: "the name of the tmux session" # required
+root: "the root directory of this session" # required
 windows:
-    - name: "the name of the window (also functions as its id for spux's target system)" #required to define a window
-      init: "{clear} script you want this window to run when its created {enter}" #optional
+    - name: "the name of the window (also functions as its id for spux's target system)" # required to define a window
+      init: "{clear} script you want this window to run when its created {enter}" # optional
       # {clear} clears the terminal
       # {enter} runs the command preceding it in the terminal
       # {interrupt} sends Ctrl-C to the terminal
     - name: "my other window"
       panes:
-        - name: "the id of this pane (for spux's targetting system)" #required to define a pane
-          init: "{clear} launch vim {enter}" #optional
+        - name: "the id of this pane (for spux's targetting system)" # required to define a pane
+          init: "{clear} launch vim {enter}" # optional
           cmds: 
-          #The below will generate a script which will run against the
-          #'frontend_server' pane. spux will bind this script to the $SPUX_CMD_0
-          #environment variable, which exported to this pane.
-          #While in this pane, simply execute the command in 
-          #$SPUX_CMD_0 and it will run in the target specified in "tgt", and
-          #will automatically switch your tmux focus.
+              # The below will generate a script which will run against the
+              # 'frontend_server' pane. spux will bind this script to the $SPUX_CMD_0
+              # environment variable, which exported to this pane.
+              # While in this pane, simply execute the command in 
+              # $SPUX_CMD_0 and it will run in the target specified in "tgt", and
+              # will automatically switch your tmux focus.
             - cmd: "{interrupt} {clear} launch backend server {enter}"
+              tgt: "frontend_server"
+              # This will create a script and assign it to $SPUX_CMD_1 in this pane
+            - cmd: "another command"
               tgt: "frontend_server"
         - name: "frontend_server"
           init: "{clear} launch backend server {enter}"
@@ -93,3 +122,20 @@ windows:
 ```
 
 ## Making use of SPUX_CMD environment variables
+
+Here's what's in my neovim config
+
+```lua
+vim.keymap.set('n', '<leader><enter>', function()
+	local status, output, exit_code = os.execute(vim.env.SPUX_CMD_0)
+	if status then
+		print("$SPUX_CMD_0 executed successfully.")
+	else
+		print("Error executing $SPUX_CMD_0.")
+	end
+end)
+```
+
+So, referencing the script provided [here](#the-solution),
+whenever I press `space` (my leader key) then `enter` in my neovim open in
+the `vi` window, it runs `go build spux.go` in my `zsh` pane.
