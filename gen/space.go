@@ -14,6 +14,7 @@ type Space struct {
 func (space *Space) preprocess() {
 	space.targetMap = make(map[string]FullTarget)
 	// Assign indices to windows and panes and generate targetMap
+
 	for i := 0; i < len(space.Windows); i++ {
 		window := &space.Windows[i]
 		window.index = i
@@ -23,8 +24,9 @@ func (space *Space) preprocess() {
 			pane: -1,
 		}
 
+
 		for k := 0; k < len(window.Cmds); k++ {
-			cmd := window.Cmds[k]
+			cmd := &window.Cmds[k]
 			cmd.index = k
 		}
 
@@ -39,7 +41,8 @@ func (space *Space) preprocess() {
 			}
 
 			for l := 0; l < len(pane.Cmds); l++ {
-				cmd := pane.Cmds[l]
+				fmt.Println(fmt.Sprint(l))
+				cmd := &pane.Cmds[l]
 				cmd.index = l
 			}
 		}
