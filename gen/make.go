@@ -1,27 +1,41 @@
-package gen 
+package gen
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func makeWindows(space *Space) string {
+func makeWindows(space *Space) (string, error) {
 	out := ""
 
 	for i := 0; i < len(space.Windows); i++ {
-		out += makeWindow(space, &space.Windows[i])
+		window, err := makeWindow(space, &space.Windows[i])
+
+		if err != nil {
+			return "", err
+		}
+
+		out += window
 	}
 
-	return out
+	return out, nil
 }
 
-func makeWindow(space *Space, window *Window) string {
+func makeWindow(space *Space, window *Window) (string, error) {
 	out := ""
 
 	for i := 0; i < len(window.Cmds); i++ {
 		cmd := &window.Cmds[i]
-		out += makeCmd(space, cmd, &FullTarget{
+		madeCmd, err := makeCmd(space, cmd, &FullTarget{
 			session: space.Space,
 			window: window.index,
 			pane: -1,
 		})
+
+		if err != nil {
+			return "", err
+		}
+
+		out += madeCmd
 	}
 
 	// Name/Make the window
@@ -44,22 +58,40 @@ func makeWindow(space *Space, window *Window) string {
 	}
 	
 	if len(window.Panes) > 0 {
-		out += makePanes(space, window)
+		pane, err := makePanes(space, window)
+
+		if err != nil {
+			return "", err
+		}
+
+		out += pane
 	} else if window.Init != "" {
-		out += tmuxExecuteInit(
+		init, err := tmuxExecuteInit(
 			&HalfTarget{session: space.Space, window: window.index},
 			window.Init,
-		)
+		) 
+
+		if err != nil {
+			return "", err
+		}
+
+		out +=  init
 	}
 
-	return out
+	return out, nil
 }
 
-func makePanes(space *Space, window *Window) string {
+func makePanes(space *Space, window *Window) (string, error) {
 	out := ""
 
 	for i := 0; i < len(window.Panes); i++ {
-		out += makePane(space, window.index, &window.Panes[i])
+		pane, err := makePane(space, window.index, &window.Panes[i])
+
+		if err != nil {
+			return "", err
+		}
+
+		out += pane
 	}
 
 	if (window.Layout != "") {
@@ -72,25 +104,32 @@ func makePanes(space *Space, window *Window) string {
 		)
 	}
 
-	return out
+	return out, nil 
 }
 
-func makePane(space *Space, windowIndex int, pane *Pane) string {
+func makePane(space *Space, windowIndex int, pane *Pane) (string, error) {
 	out := ""
 
 	for i := 0; i < len(pane.Cmds); i++ {
 		cmd := &pane.Cmds[i]
-		out += makeCmd(space, cmd, &FullTarget{
+
+		madeCmd, err := makeCmd(space, cmd, &FullTarget{
 			session: space.Space,
 			window: windowIndex,
 			pane: pane.rel_index,
 		})
+
+		if err != nil {
+			return "", err
+		}
+
+		out += madeCmd
 	}
 	
 	// If this is pane 0 in the window, then we only need to execute
 	// this pane's init script
 	if pane.rel_index == 0 {
-		out += tmuxExecuteInit(
+		init, err := tmuxExecuteInit(
 			&FullTarget{
 				session: space.Space,
 				window: windowIndex,
@@ -98,6 +137,12 @@ func makePane(space *Space, windowIndex int, pane *Pane) string {
 			},
 			pane.Init,
 		)
+
+		if err != nil {
+			return "", err
+		}
+
+		out += init
 	} else {
 		// If this pane is not pane 0 in window, then we need to split 
 		out += tmuxSplitWindow(
@@ -108,7 +153,7 @@ func makePane(space *Space, windowIndex int, pane *Pane) string {
 			},
 		)
 
-		out += tmuxExecuteInit(
+		init, err := tmuxExecuteInit(
 			&FullTarget{
 				session: space.Space,
 				window: windowIndex,
@@ -116,13 +161,24 @@ func makePane(space *Space, windowIndex int, pane *Pane) string {
 			},
 			pane.Init,
 		)
+
+		if err != nil {
+			return "", err
+		}
+
+		out += init
 	}
 
-	return out
+	return out, nil
 }
 
-func makeCmd(space *Space, command *Cmd, source *FullTarget) string {
-	script := resolveSpaceScript(command.Cmd) 
+func makeCmd(space *Space, command *Cmd, source *FullTarget) (string, error) {
+	script, err := resolveSpaceScript(command.Cmd) 
+
+	if err != nil {
+		return "", err
+	}
+
 	target := space.targetMap[command.Tgt]
 
 	spaceCmd := fmt.Sprintf(
@@ -150,5 +206,5 @@ func makeCmd(space *Space, command *Cmd, source *FullTarget) string {
 		source,
 		"SPUX_CMD_" + fmt.Sprint(command.index), 
 		`"` + spaceCmd + `"`,
-	)
+	), nil
 }

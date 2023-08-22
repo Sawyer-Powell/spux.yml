@@ -26,14 +26,19 @@ func ParseYml(filename string) *Space {
 	return space
 }
 
-func (space *Space) GenerateScript() string {
+func (space *Space) GenerateScript() (string, error) {
 	space.preprocess()
 
 	out := "#!/bin/bash\n"
 	out += fmt.Sprintf(`cd %s`, space.Root) + "\n"
 	out += tmuxNewSession(space.Space)
-	out += makeWindows(space)
-	//out += tmuxAttachSession(space.Space)
+	windows, err := makeWindows(space)
 
-	return out
+	if err != nil {
+		return "", err
+	}
+
+	out += windows
+
+	return out, nil
 }

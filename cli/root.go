@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -73,12 +74,20 @@ func spux(cmd *cobra.Command, args []string) {
 		isYml := strings.Contains(first_arg, ".yml") ||
 			strings.Contains(first_arg, ".yaml")
 		if isYml {
-			handleYmlArg(first_arg)
+			err := handleYmlArg(first_arg)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
 		} else {
 			handleSpaceArg(first_arg)
 		}
 	} else {
-		handleSpuxYml()
+		err := handleSpuxYml()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	}
 }
 
@@ -103,12 +112,16 @@ func getBinPath() string {
 	return bin
 }
 
-func createScript(space *gen.Space) string {
-	script := space.GenerateScript();
+func createScript(space *gen.Space) (string, error) {
+	script, err := space.GenerateScript();
+
+	if err != nil {
+		return "", err
+	}
 
 	scriptPath := getBinPath() + ps + space.Space
 
-	err := os.WriteFile(
+	err = os.WriteFile(
 		scriptPath,
 		[]byte(script),
 		0755,
@@ -116,9 +129,10 @@ func createScript(space *gen.Space) string {
 
 	if err != nil {
 		fmt.Printf("failed to write to %s: err=%v\n", scriptPath, err)
+		return "", err
 	}
 
-	return scriptPath
+	return scriptPath, nil
 }
 
 func executeScript(scriptPath string) {
@@ -130,10 +144,16 @@ func executeScript(scriptPath string) {
 	}
 }
 
-func handleYmlArg(filename string) {
+func handleYmlArg(filename string) error {
 	space := gen.ParseYml(filename)
-	script := createScript(space)
+	script, err := createScript(space)
+
+	if err != nil {
+		return err
+	}
+
 	safeExecuteScript(script, space.Space)
+	return nil
 }
 
 func getFilesFromDir(dir string) []string{
@@ -190,12 +210,11 @@ func handleSpaceArg(spaceName string) {
 	safeExecuteScript(scriptPath, spaceName)
 }
 
-func handleSpuxYml() {
+func handleSpuxYml() error {
 	cwd, err := os.Getwd()
 
 	if err != nil {
-		fmt.Printf("could not get current directory err=%v\n", err)
-		return
+		return errors.New(fmt.Sprintf("could not get current directory err=%v\n", err))
 	}
 
 	files := getFilesFromDir(cwd)
@@ -210,12 +229,18 @@ func handleSpuxYml() {
 
 	if ymlPath == "" {
 		fmt.Printf("could not find file matching \"%s\" in %s\n", spuxYml, cwd)
-		return
+		return nil
 	}
 
 	space := gen.ParseYml(ymlPath)
-	script := createScript(space)
+	script, err := createScript(space)
+
+	if err != nil {
+		return err
+	}
+
 	safeExecuteScript(script, space.Space)
+	return nil
 }
 
 func safeExecuteScript(script string, spaceName string) {

@@ -4,12 +4,17 @@ import "fmt"
 
 // For converting the init parameters of panes and windows into tmux
 // commands
-func tmuxExecuteInit(target Target, init string) string {
-	safe_init := resolveSpaceScript(init)
+func tmuxExecuteInit(target Target, init string) (string, error) {
+	safe_init, err := resolveSpaceScript(init)
+
+	if err != nil {
+		return "", err
+	}
+
 	return fmt.Sprintf(`tmux send-keys -t %s C-l %s`,
 		target.String(),
 		safe_init,
-	) + "\n"
+	) + "\n", nil
 }
 
 func tmuxSplitWindow(target Target) string {

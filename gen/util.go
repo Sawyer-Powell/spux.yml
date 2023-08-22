@@ -1,6 +1,10 @@
-package gen 
+package gen
 
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 func cleanScriptStr(ss string) string {
 	if (len(ss) > 0 && ss[len(ss) - 1] == ';') {
@@ -10,7 +14,7 @@ func cleanScriptStr(ss string) string {
 	return ss
 }
 
-func resolveSpaceScript(ss string) string {
+func resolveSpaceScript(ss string) (string, error) {
 	out := ""
 	snippet := ss;
 	start := strings.IndexRune(snippet, '{')
@@ -31,14 +35,17 @@ func resolveSpaceScript(ss string) string {
 			switch snippet[start+1:end] {
 			case "interrupt":
 				out += "C-c "
-				snippet = snippet[end+1:]
+				break
 			case "clear":
 				out += "C-l "
-				snippet = snippet[end+1:]
+				break
 			case "enter":
 				out += "C-m "
-				snippet = snippet[end+1:]
+				break
+			default:
+				return "", errors.New(fmt.Sprintf("invalid command: {%s}\n", snippet[start+1:end]))
 			}
+			snippet = snippet[end+1:]
 		}
 		start = strings.IndexRune(snippet, '{')
 
@@ -49,5 +56,5 @@ func resolveSpaceScript(ss string) string {
 		out += `'` + s + `'`
 	}
 
-	return out
+	return out, nil
 }
