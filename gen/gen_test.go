@@ -5,7 +5,7 @@ import (
 ) 
 
 func TestTestData(t *testing.T) {
-	space := ParseYml("../test_data")
+	space := ParseYml("../test_data.yml")
 	t.Logf("%s successfully interpreted\n", space.Space)
 
 	script, err := space.GenerateScript()
